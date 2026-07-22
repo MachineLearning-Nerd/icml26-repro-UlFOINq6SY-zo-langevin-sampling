@@ -1,0 +1,36 @@
+{
+  "c1_fisher_conv": {
+    "passed": true,
+    "fis": [
+      7.147218763333036,
+      3.4345614549465076,
+      2.0217533138246155
+    ]
+  },
+  "c2_vr_estimator": {
+    "passed": true,
+    "var_std": 1.1271557103857632,
+    "var_vr": 0.7529518950482675
+  },
+  "c3_sgm_prior": {
+    "passed": true,
+    "fi_mixture": 8.803848440584956
+  },
+  "c4_fastmri_proxy": {
+    "passed": true,
+    "mse": 0.26846405939868406
+  },
+  "c5_blackhole_proxy": {
+    "passed": true,
+    "mse": 0.04084808497087977
+  },
+  "c6_batch_complexity": {
+    "passed": true,
+    "fis": [
+      1.2505489019815792,
+      0.8129893784337118,
+      1.459816474991082
+    ],
+    "spread": 1.795615679264511
+  }
+}
