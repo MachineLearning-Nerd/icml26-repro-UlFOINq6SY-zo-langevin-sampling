@@ -2,13 +2,13 @@
   "schema_version": 1,
   "title": "Repro - Zeroth-Order Non-Log-Concave Sampling with Variance Reduction",
   "emoji": "🎯",
-  "space_id": null,
-  "paper": null,
+  "space_id": "DineshAI/UlFOINq6SY",
+  "paper": "UlFOINq6SY",
   "tags": [
     "icml2026-repro",
     "paper-UlFOINq6SY"
   ],
-  "updated_at": "2026-07-22T11:56:54+00:00",
+  "updated_at": "2026-07-24T22:30:00+00:00",
   "root": {
     "slug": "index",
     "title": "Repro - Zeroth-Order Non-Log-Concave Sampling with Variance Reduction",
@@ -43,9 +43,15 @@
         "title": "Conclusion",
         "file": "pages/conclusion/page.md",
         "children": []
+      },
+      {
+        "slug": "historical-toy-baseline",
+        "title": "Historical rejected baseline",
+        "file": "pages/historical-toy-baseline/page.md",
+        "children": []
       }
     ]
   },
   "agent_view_tokens": 1514,
-  "revision": "1784721414288614151"
+  "revision": "1784882000000000002"
 }

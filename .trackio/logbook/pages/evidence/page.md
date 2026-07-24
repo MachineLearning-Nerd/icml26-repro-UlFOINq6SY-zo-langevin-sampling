@@ -1,51 +1,57 @@
 # Evidence
 
-
----
-<!-- trackio-cell
-{"type": "markdown", "id": "cell_017005dabe56", "created_at": "2026-07-22T11:56:49+00:00", "title": "Verification output (last 40 lines)"}
--->
-## Verification output (last 40 lines)
-
+## Fixed command & pinned environment (identical on every node)
 ```
-CLAIM 3 (Theorem 3): convergence extends to non-log-concave (mixture) target
-==============================================================================
-  mixture target Fisher info: 8.8038 (bounded < 20)
-  -> PASS
-
-==============================================================================
-CLAIM 4: ZO sampling produces valid reconstruction (synthetic proxy for FastMRI)
-==============================================================================
-  reconstruction MSE: 0.2685 (< 1.0)
-  (Paper: FastMRI 35.29 dB PSNR; synthetic denoising proxy.)
-  -> PASS
-
-==============================================================================
-CLAIM 5: ZO sampling works on imaging inverse problem (synthetic proxy)
-==============================================================================
-  image reconstruction MSE: 0.0408 (< 0.5)
-  (Paper: black-hole imaging 26.71 dB; synthetic proxy.)
-  -> PASS
-
-==============================================================================
-CLAIM 6: O(1) per-iteration batch complexity — fixed pb=10, different (p,b)
-==============================================================================
-  (p=0.1, b=100, pb=10.0): FI=1.2505
-  (p=0.5, b=20, pb=10.0): FI=0.8130
-  (p=1.0, b=10, pb=10.0): FI=1.4598
-  FI spread: 1.796 (< 2.0 — O(1) batch complexity)
-  -> PASS
-
-==============================================================================
-VERDICT SUMMARY
-==============================================================================
-  [PASS] c1_fisher_conv
-  [PASS] c2_vr_estimator
-  [PASS] c3_sgm_prior
-  [PASS] c4_fastmri_proxy
-  [PASS] c5_blackhole_proxy
-  [PASS] c6_batch_complexity
-
-  6/6 claims verified.
-  wrote outputs/verdict.json
+uv run python repro/src/verify_zo.py
 ```
+- **Environment:** uv, Python 3.11.13, numpy 1.26, scipy 1.17, matplotlib 3.10, sympy 1.14
+  (pinned `pyproject.toml` + `uv.lock` committed). One repo-level `.venv`, reused everywhere.
+- **Compute:** local CPU (Apple arm64), 1 core, ≈ 1 minute. No GPU used.
+- **Git SHA:** branch `orx/faithful-cpu-claims-1-2-3-6` @ `2130bce` (verifier); master @ `8674466` (this report).
+- **Seeds:** `seed_base = 1729`; each experiment uses `SEED + sd` for sd=0..n-1 (deterministic).
+- **Run log (evidence channel):** `orx logs 40d1957d-0c1f-4b6f-9f6a-12d8465bf65c` (exit code 0).
+
+## Raw results (inline — from `outputs/verdict.json`, copied to [`reports/zo-langevin-repro/verdict.json`](https://github.com/MachineLearning-Nerd/icml26-repro-UlFOINq6SY-zo-langevin-sampling/blob/master/reports/zo-langevin-repro/verdict.json))
+
+**Claim 1 — symbolic complexity (independent check):** `sympy.solve(1/(N·γ) = ε, N)` with
+γ=Lₘ⁻¹N⁻³ᐟ⁴d⁻⁷ᐟ⁴ returns **N = Lₘ⁴·d⁷/ε⁴**. FI scaling (bare VR-ZO-LMC, d=2, median over 4 seeds):
+N ∈ {500,1000,2000,4000} → FI {0.995, 0.786, 0.305, 0.095} (monotone ↓).
+
+**Claim 2 — VR vs standard gradient MSE** (along trajectory, γ=0.01, matched avg budget ~6,
+mean over 3 seeds):
+
+| d | standard (p=1,b=6) | VR (p=0.4,b=9,b′=4) | VR (p=0.2,b=14,b′=4) | VR/standard |
+|---|---|---|---|---|
+| 2 | 0.94 | 0.60 | 0.62 | **0.61** |
+| 4 | 3.30 | 2.03 | 1.93 | 0.61 |
+| 8 | 13.5 | 8.84 | 7.11 | **0.53** |
+| 16 | 45.9 | 31.8 | 26.4 | 0.58 |
+| 32 | 182 | 133 | 116 | 0.59 |
+
+**Claim 3 — ZO-APMC FI to analytical posterior** (d=2 bimodal-GMM prior + random linear A,
+paper schedule σ₀=10,α₀=10,ρ₂=0.975,γ=0.05,μ=10⁻⁴, p=0.5,b=10,b′=5; median 4 seeds):
+N {500,1000,2000,4000} → FI {0.663, 0.249, 0.231, 0.165} (↓).
+
+**Claim 6 — O(1) batch-invariance** (bare VR-ZO-LMC, d=2, N=6000, γ=0.02, median 6 seeds):
+| (p,b) | pb | FI |
+|---|---|---|
+| (1.0,10) | 10 | 0.165 |
+| (0.5,20) | 10 | 0.215 |
+| (0.2,50) | 10 | 0.200 |
+| (0.1,100) | 10 | 0.159 |
+Spread (max/min) = **1.35** — FI ~invariant to the (p,b) split at fixed per-iteration cost.
+
+## Claims 4 & 5 — BLOCKED routes (4 each)
+See [`repro/src/blocked_routes_4_5.md`](https://github.com/MachineLearning-Nerd/icml26-repro-UlFOINq6SY-zo-langevin-sampling/blob/orx/faithful-cpu-claims-1-2-3-6/repro/src/blocked_routes_4_5.md).
+1. **Availability** — FastMRI, pretrained SGM `fastmri_brain.pth` (PnP-MonteCarlo), InverseBench, official code: all public. Blocker is compute, not access.
+2. **Compute wall** — H100: MRI 50.5 s/img, BH 154.2 s/img. CPU ~10²–10³× slower → MRI ~84 CPU-days/img, full Table 1 ~3 CPU-years.
+3. **Metric pipeline** — paper PSNR/SSIM/NRMSE (Appendix C.3) verified on a synthetic case (MSE 3.29e-4 → 34.83 dB single-shot vs 35.29 dB per-image-averaged over 40 imgs; consistent).
+4. **Falsification** — an empirical PSNR claim can only be falsified by running it; the run is exactly what CPU-only forbids. Route blocked by the same constraint.
+
+## Limitations & deviations (honest)
+1. Theorem claims (1, 3): universally quantified → primary evidence is the independent symbolic derivation; finite sweeps are scoped corroboration only.
+2. Synthetic corroboration (3, 6): the paper's exact 2D toy prior params and ε*=2.5/αₖ coupling are under-specified (toy configs unreleased). We use a concrete bimodal-GMM + random linear A with the paper's stated schedule, verify the robust substance, and report actual FI (not the setup-sensitive 0.01 threshold).
+3. Claims 4–5: CPU-only authorization is the sole blocker.
+
+## SHA-256 upload allowlist (publication)
+Tracked text/figure files only; no secrets. Computed at publish time (see release report).
