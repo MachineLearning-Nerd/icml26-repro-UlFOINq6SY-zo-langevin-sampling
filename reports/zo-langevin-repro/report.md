@@ -127,4 +127,4 @@ GPU compute for Claims 4–5.**
 - Claims 4–5: CPU-only authorization is the sole blocker; given GPU access, the public official
   code + InverseBench + pretrained SGM checkpoint would enable faithful reproduction.
 
-**Branch:** [`orx/faithful-cpu-claims-1-2-3-6`](https://github.com/MachineLearning-Nerd/icml26-repro-UlFOINq6SY-zo-langevin-sampling/tree/orx/faithful-cpu-claims-1-2-3-6) · Run: `uv run python repro/src/verify_zo.py` · Raw JSON: [`verdict.json`](verdict.json)
+**Branch:** publication surface = [`master`](https://github.com/MachineLearning-Nerd/icml26-repro-UlFOINq6SY-zo-langevin-sampling) @ `60f1823` (the command `uv run python repro/src/verify_zo.py` on master reproduces the verdict); experiment branch [`orx/faithful-cpu-claims-1-2-3-6`](https://github.com/MachineLearning-Nerd/icml26-repro-UlFOINq6SY-zo-langevin-sampling/tree/orx/faithful-cpu-claims-1-2-3-6) · Raw JSON: [`verdict.json`](verdict.json)

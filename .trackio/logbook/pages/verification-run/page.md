@@ -1,6 +1,6 @@
 # Verification run (current)
 
-**Branch:** `orx/faithful-cpu-claims-1-2-3-6` @ `2130bce` · **Run:** `40d1957d-0c1f-4b6f-9f6a-12d8465bf65c` (local CPU, 1m35s, exit 0) · **Command:** `uv run python repro/src/verify_zo.py`
+**Branch:** master @ `60f1823` (publication surface; reproduces the verdict) · experiment branch `orx/faithful-cpu-claims-1-2-3-6` @ `2130bce` · **Run:** `40d1957d-0c1f-4b6f-9f6a-12d8465bf65c` (local CPU, ~67 s, exit 0) · **Command:** `uv run python repro/src/verify_zo.py`
 
 This page supersedes the [Historical rejected baseline](#/historical-toy-baseline) (toy 6/12). The
 verifier below is the current one — it exits nonzero if any VERIFIED-eligible check fails.
