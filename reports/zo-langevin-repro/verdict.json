@@ -108,8 +108,8 @@
     "requires": "GPU + InverseBench GRMHD + pretrained SGM"
   },
   "_meta": {
-    "git_sha": "1aec0e75b64407e42f868ff25530a7cbfea7f64c",
-    "elapsed_s": 56.5,
+    "git_sha": "962175e9ee5b1b95fd1da104d54ed260bc3de8c9",
+    "elapsed_s": 67.3,
     "seed_base": 1729,
     "env": "uv py3.11 numpy/scipy/matplotlib CPU"
   }
