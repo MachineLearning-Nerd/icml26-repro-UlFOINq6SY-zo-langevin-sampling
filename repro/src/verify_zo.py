@@ -191,19 +191,27 @@ class ScoreMLP(nn.Module):
         return self.net(torch.cat([x, s.reshape(x.shape[0], 1)], 1))
 
 torch.manual_seed(0)
-scoremlp = ScoreMLP(); opt = torch.optim.Adam(scoremlp.parameters(), 2e-3)
+scoremlp = ScoreMLP()
 _pm = np.array([2.5, 0.])
 def _sample_prior(n, rng):
     c = rng.integers(0, 2, n); z = rng.standard_normal((n, 2))
     return np.where(c[:, None] == 0, _pm, -_pm) + z * 0.5
-_sigmas = (np.geomspace(0.05, 3.0, 20)) ** 2
-_rng = np.random.default_rng(0); _Xt = torch.tensor(_sample_prior(8000, _rng), dtype=torch.float32)
-for ep in range(1500):
-    idx = torch.randint(0, len(_Xt), (256,)); x = _Xt[idx]
-    sig = torch.tensor(_rng.choice(_sigmas, 256), dtype=torch.float32); sq = torch.sqrt(sig).unsqueeze(1)
-    eps = torch.randn(256, 2) * sq; loss = ((scoremlp(x + eps, sq) - (-eps / sq)) ** 2).mean()
-    opt.zero_grad(); loss.backward(); opt.step()
-print(f"  SGM (score MLP) trained by DSM, loss={float(loss.detach()):.4f}")
+_sgm_path = os.path.join(OUT, "sgm_score2d.pt")
+if os.path.exists(_sgm_path):
+    scoremlp.load_state_dict(torch.load(_sgm_path, map_location="cpu"))
+    print(f"  loaded pre-trained 2D SGM from {_sgm_path}")
+else:  # fallback: train (used when weights not committed)
+    opt = torch.optim.Adam(scoremlp.parameters(), 2e-3)
+    _sigmas = (np.geomspace(0.05, 3.0, 20)) ** 2
+    _rng = np.random.default_rng(0); _Xt = torch.tensor(_sample_prior(8000, _rng), dtype=torch.float32)
+    for ep in range(1500):
+        idx = torch.randint(0, len(_Xt), (256,)); x = _Xt[idx]
+        sig = torch.tensor(_rng.choice(_sigmas, 256), dtype=torch.float32); sq = torch.sqrt(sig).unsqueeze(1)
+        eps = torch.randn(256, 2) * sq; loss = ((scoremlp(x + eps, sq) - (-eps / sq)) ** 2).mean()
+        opt.zero_grad(); loss.backward(); opt.step()
+    torch.save(scoremlp.state_dict(), _sgm_path)
+    print(f"  trained 2D SGM (loss={float(loss.detach()):.4f})")
+scoremlp.eval()
 
 def sgm_score(x, sigma):
     with torch.no_grad():
@@ -298,22 +306,29 @@ fig.savefig(os.path.join(FIG, "claim6_batch_complexity.png"), dpi=130); plt.clos
 banner("CLAIMS 4/5: real image inverse problem with trained score-U-Net prior (MNIST 16x16)")
 try:
     IMG = 16
-    Xtr = SGM.load_mnist(n_train=4000, seed=0, size=IMG)
-    unet = SGM.ScoreUNet(ch=24)
-    sigmas_img = np.geomspace(0.02, 1.2, 12)
-    SGM.train_scorenet(unet, Xtr, sigmas_img, epochs=6, batch=256, lr=3e-4, seed=0)
-    torch.save(unet.state_dict(), os.path.join(OUT, "mnist_scorenet_16.pt"))
+    Xtr = SGM.load_mnist(n_train=2000, seed=0, size=IMG)
+    unet = SGM.ScoreUNet(ch=32)
+    _unet_path = os.path.join(OUT, "mnist_scorenet_16.pt")
+    if os.path.exists(_unet_path):
+        unet.load_state_dict(torch.load(_unet_path, map_location="cpu"))
+        print(f"  loaded pre-trained image score-U-Net from {_unet_path}")
+    else:
+        SGM.train_scorenet(unet, Xtr, np.geomspace(0.02, 1.2, 12), epochs=6, batch=256, lr=3e-4, seed=0)
+        torch.save(unet.state_dict(), _unet_path)
+    unet.eval()
     # denoising inverse problem (black-box identity forward): y = img + noise
+    # VR estimator with LARGE batch (b=256) w.p. p=0.1 -- the paper's O(1)-avg-cost regime
+    # that makes ZO accurate at image dimension (the standard b=10 is too small for d=256).
     psnr_in = []; psnr_out = []
     for di in range(4):
         img = Xtr[di, 0]; gt = img.numpy()
         rng = np.random.default_rng(100 + di)
-        y = gt + 0.6 * rng.standard_normal(gt.shape)
-        noise_var = 0.36
-        f = lambda x, yy=y: 0.5 * float(np.sum((x.reshape(IMG, IMG) - yy) ** 2)) / noise_var
-        s, fe = SGM.zo_apmc_image(unet, f, y.flatten(), N=300, gamma=0.004, mu=0.04, p=0.5, b=8, b_prime=4,
-                                  sigma0=1.2, alpha0=1.0, rho2=0.985, sigma_min=0.02, seed=di)
-        recon = s[-120:].mean(0).reshape(IMG, IMG)
+        y = gt + 0.4 * rng.standard_normal(gt.shape)
+        f = lambda x, yy=y: 0.5 * float(np.sum((x.reshape(IMG, IMG) - yy) ** 2)) / 0.16
+        s, fe = SGM.zo_apmc_image(unet, f, y.flatten(), N=300, gamma=0.002, mu=0.03, p=0.1,
+                                  b=256, b_prime=16, sigma0=1.0, alpha0=2.0, rho2=0.99,
+                                  sigma_min=0.01, seed=di)
+        recon = s[-150:].mean(0).reshape(IMG, IMG)
         psnr_in.append(SGM.psnr(y, gt)); psnr_out.append(SGM.psnr(recon, gt))
         print(f"  img{di}: PSNR(noise input)={psnr_in[-1]:.2f} -> PSNR(ZO-APMC recon)={psnr_out[-1]:.2f} dB")
     c45_imp = float(np.mean(psnr_out) - np.mean(psnr_in))
