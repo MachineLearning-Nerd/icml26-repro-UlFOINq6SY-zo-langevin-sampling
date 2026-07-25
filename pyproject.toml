@@ -2,13 +2,22 @@
 name = "zo-langevin-repro"
 version = "0.1.0"
 description = "Reproduction of 'Zeroth-Order Non-Log-Concave Sampling with Variance Reduction' (arXiv 2605.30573, OpenReview UlFOINq6SY)"
-requires-python = ">=3.11,<3.12"
+requires-python = ">=3.11"
 dependencies = [
     "numpy>=1.26,<2.0",
     "scipy>=1.11",
     "matplotlib>=3.7",
     "sympy>=1.12",
+    "torch>=2.2",
 ]
 
 [tool.uv]
 package = false
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }

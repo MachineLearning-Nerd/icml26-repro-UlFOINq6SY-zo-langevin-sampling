@@ -2,3 +2,6 @@
 __pycache__/
 *.pyc
 .trackio/runs/
+
+outputs/mnist/
+outputs/mnist_scorenet*.pt
