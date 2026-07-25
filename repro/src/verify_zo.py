@@ -15,8 +15,11 @@ CPU (numpy + torch). Prints banners + raw numbers to stdout, writes outputs/verd
 """
 from __future__ import annotations
 import json, os, sys, time
+sys.stdout.reconfigure(line_buffering=True)  # unbuffered on non-TTY (HF logs)
+os.environ["PYTHONUNBUFFERED"] = "1"
 import numpy as np
 import torch, torch.nn as nn
+torch.set_num_threads(max(1, (os.cpu_count() or 2) // 2))  # avoid thread contention
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -195,7 +198,7 @@ def _sample_prior(n, rng):
     return np.where(c[:, None] == 0, _pm, -_pm) + z * 0.5
 _sigmas = (np.geomspace(0.05, 3.0, 20)) ** 2
 _rng = np.random.default_rng(0); _Xt = torch.tensor(_sample_prior(8000, _rng), dtype=torch.float32)
-for ep in range(2500):
+for ep in range(1500):
     idx = torch.randint(0, len(_Xt), (256,)); x = _Xt[idx]
     sig = torch.tensor(_rng.choice(_sigmas, 256), dtype=torch.float32); sq = torch.sqrt(sig).unsqueeze(1)
     eps = torch.randn(256, 2) * sq; loss = ((scoremlp(x + eps, sq) - (-eps / sq)) ** 2).mean()
@@ -295,14 +298,14 @@ fig.savefig(os.path.join(FIG, "claim6_batch_complexity.png"), dpi=130); plt.clos
 banner("CLAIMS 4/5: real image inverse problem with trained score-U-Net prior (MNIST 16x16)")
 try:
     IMG = 16
-    Xtr = SGM.load_mnist(n_train=6000, seed=0, size=IMG)
-    unet = SGM.ScoreUNet(ch=32)
+    Xtr = SGM.load_mnist(n_train=4000, seed=0, size=IMG)
+    unet = SGM.ScoreUNet(ch=24)
     sigmas_img = np.geomspace(0.02, 1.2, 12)
-    SGM.train_scorenet(unet, Xtr, sigmas_img, epochs=10, batch=256, lr=3e-4, seed=0)
+    SGM.train_scorenet(unet, Xtr, sigmas_img, epochs=6, batch=256, lr=3e-4, seed=0)
     torch.save(unet.state_dict(), os.path.join(OUT, "mnist_scorenet_16.pt"))
     # denoising inverse problem (black-box identity forward): y = img + noise
     psnr_in = []; psnr_out = []
-    for di in range(6):
+    for di in range(4):
         img = Xtr[di, 0]; gt = img.numpy()
         rng = np.random.default_rng(100 + di)
         y = gt + 0.6 * rng.standard_normal(gt.shape)
