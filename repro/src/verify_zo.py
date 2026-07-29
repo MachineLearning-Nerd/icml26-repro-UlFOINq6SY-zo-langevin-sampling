@@ -369,6 +369,53 @@ except Exception as e:
 
 
 # =========================================================================== #
+# CLAIM 6 FALSIFICATION CAMPAIGN (faithful Fig 2b / App C.1 pipeline).
+#   Independent test of the peer (algorise) falsification hypothesis that a
+#   faithful pb=10 sweep lands at FI ~ 4.2-4.7 instead of < 0.01.
+#   This section reports an EVIDENCE STATUS (FALSIFIED/BLOCKED); it is not a
+#   pass/fail regression check and never fails the run by itself.
+# =========================================================================== #
+banner("CLAIM 6 FALSIFICATION: faithful ZO-APMC Fig 2b sweep (bimodal GMM prior)")
+try:
+    import c6_falsify
+    c6f = c6_falsify.run_campaign(log=print)
+    json.dump(c6f, open(os.path.join(OUT, "c6_falsification.json"), "w"),
+              indent=2, default=str)
+    print("  wrote outputs/c6_falsification.json")
+    print("  C6_FALSIFICATION_JSON_BEGIN")
+    print(json.dumps(c6f, default=str))
+    print("  C6_FALSIFICATION_JSON_END")
+    RESULTS["c6_falsification"] = {
+        "verdict": c6f["decision"]["evidence_status"],
+        "passed": True,  # informational section; regression gate unaffected
+        "decision": c6f["decision"]}
+    # figure: FI by config across faithful completions + control floors
+    fig, ax = plt.subplots(1, 1, figsize=(7.2, 3.6))
+    labels = [f"p={p}\nb={b}" for p, b in c6_falsify.PAIRS]
+    xpos = np.arange(len(labels))
+    styles = [("primary_const_bp5", "const eps*=2.5, b'=5 (primary)", "#cc4444"),
+              ("variant_decay_bp5", "eps* 2.5->0 (App C.1 protocol)", "#4477aa"),
+              ("variant_const_bp2", "const eps*, b'=2 (peer)", "#e69f00"),
+              ("variant_noeps_bp5", "eps*=0 (ZO isolation ctrl)", "#44aa77")]
+    for i, (key, lab, col) in enumerate(styles):
+        vals = [v["FI_mean"] for v in c6f[key]["configs"].values()]
+        ax.bar(xpos + (i - 1.5) * 0.2, vals, 0.19, label=lab, color=col)
+    ax.axhline(0.01, color="k", ls="--", lw=1, label="claim threshold 0.01")
+    ax.axhline(c6f["control_estimator_floor"]["FI_mean"], color="gray", ls=":",
+               lw=1, label="estimator floor (exact samples)")
+    ax.set_yscale("log"); ax.set_xticks(xpos); ax.set_xticklabels(labels)
+    ax.set_ylabel("relative FI (GMM fit, 1000x1000 grid)")
+    ax.set_title("Claim 6 falsification test: faithful Fig 2b sweep, pb=10")
+    ax.legend(fontsize=7, ncol=2); fig.tight_layout()
+    fig.savefig(os.path.join(FIG, "claim6_falsification.png"), dpi=130)
+    plt.close(fig)
+except Exception as e:
+    import traceback; traceback.print_exc()
+    RESULTS["c6_falsification"] = {"verdict": "ERROR", "passed": False,
+                                   "error": str(e)}
+
+
+# =========================================================================== #
 # SUMMARY
 # =========================================================================== #
 banner("VERDICT SUMMARY (v2)")
