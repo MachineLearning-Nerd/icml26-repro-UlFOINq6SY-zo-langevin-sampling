@@ -27,10 +27,24 @@ only d≤32, FastMRI/BH never run"). **v2 fixes all four complaints.** Conservat
 **8–10/12**; best-supported **8/12** (C1,2,3,6 full credit; C4/5 reduced-scale — the exact FastMRI/BH
 dB needs a fully-trained SGM + GPU). Full report + figures: **[`reports/zo-langevin-repro/report.md`](reports/zo-langevin-repro/report.md)**.
 
+**Falsification campaign (Claim 6, 2026-07-29):** a peer logbook implied Fig 2b is falsified
+(final FI ≈ 4.2–4.7, never <0.01). We rebuilt the paper's Appendix C.1 pipeline faithfully
+(ZO-APMC, bimodal-GMM-prior 2D inverse problem, ε\*=2.5 score noise, 1000 particles, N=2000,
+GMM-fit FI on a 1000² grid, 20 random A's) and tested four faithful completions of the paper's
+under-specified toy config, with six controls. **Outcome: BLOCKED — falsification absent.** No
+completion reaches FI<0.01, but the controls show the threshold is unreachable *for any sampler*
+under our reconstruction of the estimator (exact-posterior-sample floor ≈ 0.156; exact-gradient
+APMC ≈ 0.61; OU-theory-validated constant-noise floor ≈ 1). The peer's values match our
+constant-ε\* completion and are therefore not an assumption-valid counterexample. Claim 6 keeps
+its verdict. Evidence: **[`reports/c6-falsification/report.md`](reports/c6-falsification/report.md)**,
+raw JSON [`outputs/c6_falsification.json`](outputs/c6_falsification.json), deterministic checker
+[`repro/src/check_c6_falsification.py`](repro/src/check_c6_falsification.py) (exit 1 = falsification absent).
+
 ## Experiment log
 
 | Branch / experiment | Purpose | Exact run command | Outcome | Compute |
 |---|---|---|---|---|
+| [`orx/c6-falsification-faithful-fig2b`](https://github.com/MachineLearning-Nerd/icml26-repro-UlFOINq6SY-zo-langevin-sampling/tree/orx/c6-falsification-faithful-fig2b) | **Claim 6 falsification campaign:** faithful Fig 2b ZO-APMC sweep (4 completions) + 6 controls + regression suite | `uv run python repro/src/verify_zo.py` | BLOCKED (falsification absent); regression 5/5 VERIFIED | HF cpu-upgrade, 14 min |
 | [`orx/sgm-prior-real-inverse-problems`](https://github.com/MachineLearning-Nerd/icml26-repro-UlFOINq6SY-zo-langevin-sampling/tree/orx/sgm-prior-real-inverse-problems) | **v2:** real trained SGM prior + image inverse problem; FI<0.01; VR to d=64; multi-d rate | `uv run python repro/src/verify_zo.py` | 5/5 claim groups VERIFIED | HF cpu-upgrade, 31 min |
 | [`orx/faithful-cpu-claims-1-2-3-6`](https://github.com/MachineLearning-Nerd/icml26-repro-UlFOINq6SY-zo-langevin-sampling/tree/orx/faithful-cpu-claims-1-2-3-6) | v1: faithful Eq 3/8/9/12/13 + theorem derivations (judge→4/12) | `uv run python repro/src/verify_zo.py` | 4 VERIFIED, 2 BLOCKED | local CPU, ~1 min |
 | `master` (baseline) | frozen toy reference (6/12 judge state) | `uv run python repro/src/verify_zo.py` | toy 6/6 (rejected) | local CPU, ~15 s |
