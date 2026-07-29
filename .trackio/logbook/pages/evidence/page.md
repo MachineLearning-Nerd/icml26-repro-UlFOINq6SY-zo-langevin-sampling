@@ -41,17 +41,21 @@ VR large-batch b=128 w.p. p=0.1, γ=0.002, σ₀=1, α₀=2, ρ₂=0.99, σ_min=
 | 2 | 13.60 | 13.63 |
 | mean | 13.83 | 14.00 (Δ +0.17 dB) |
 
-**Claim 6 — FI<0.01 reached** (bare VR-ZO-LMC on N(0,I), 24 chains pooled = 48 024 samples):
+**Claim 6 — bare-Gaussian corroboration** (VR-ZO-LMC on N(0,I), 24 chains pooled = 48 024 samples):
 {(p=1,b=10):0.0073, (p=0.5,b=20):0.0170, (p=0.3,b=33):0.0079, (p=0.2,b=50):0.0024}.
 **3/4 configs below 0.01**; median 0.0076. Budget control: pb 10→40 → median FI 0.0076→0.0019.
+This is an algorithmic control, not the paper's unreleased Figure 2(b) toy configuration. The
+[exact-contract campaign](#/claim-6-falsification) is therefore **BLOCKED** rather than falsified.
 
 ## Why this is no longer "toy" (per judge comments)
 - "SGM never tested" → a **real trained score network** is the ZO-APMC prior (Claims 3, 4/5).
-- "FI<0.01 not reached" → **reached** for 3/4 (p,b) configs (Claim 6).
+- The bare-Gaussian control reaches FI<0.01 for 3/4 pairs; it does not establish the Figure 2(b)
+  universal quantifier.
 - "only d≤32" → VR verified up to **d=64**; rate across **d∈{2,4,8,16}** (Claims 1, 2).
 - "FastMRI/BH never run" → a **real image inverse problem** with a trained SGM runs end-to-end with PSNR (Claims 4/5).
 
 ## Limitations (honest)
 - Theorem claims (1, 3): primary evidence = independent symbolic derivation + numerical corroboration; not a proof-assistant certificate.
 - Claims 4/5: reduced scale (16×16 MNIST, lightly-trained SGM, +0.17 dB). The paper's exact 35.29/26.71 dB need a fully-trained SGM + GPU (~10²–10³× too slow on CPU).
-- Claim 6: absolute FI<0.01 is sampler/convergence-sensitive; 3/4 stable configs reach it.
+- Claim 6: the absolute FI threshold and exact toy configuration are under-specified; see the
+  estimator-floor and exact-gradient controls in the [campaign](#/claim-6-falsification).

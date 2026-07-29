@@ -8,7 +8,7 @@
     "icml2026-repro",
     "paper-UlFOINq6SY"
   ],
-  "updated_at": "2026-07-24T22:30:00+00:00",
+  "updated_at": "2026-07-29T12:30:00+05:30",
   "root": {
     "slug": "index",
     "title": "Repro - Zeroth-Order Non-Log-Concave Sampling with Variance Reduction",
@@ -22,9 +22,16 @@
       },
       {
         "slug": "claims",
-        "title": "Claims",
+        "title": "Claims: evidence index",
         "file": "pages/claims/page.md",
-        "children": []
+        "children": [
+          {"slug": "claim-1", "title": "Claim 1 — Theorem 1 rate", "file": "pages/claim-1/page.md", "children": []},
+          {"slug": "claim-2", "title": "Claim 2 — VR estimator", "file": "pages/claim-2/page.md", "children": []},
+          {"slug": "claim-3", "title": "Claim 3 — ZO-APMC + SGM", "file": "pages/claim-3/page.md", "children": []},
+          {"slug": "claim-4-5", "title": "Claims 4–5 — inverse problems", "file": "pages/claim-4-5/page.md", "children": []},
+          {"slug": "claim-6", "title": "Claim 6 — Figure 2(b)", "file": "pages/claim-6/page.md", "children": []},
+          {"slug": "claim-6-falsification", "title": "Claim 6 — exact-contract campaign", "file": "pages/claim-6-falsification/page.md", "children": []}
+        ]
       },
       {
         "slug": "evidence",
@@ -53,5 +60,5 @@
     ]
   },
   "agent_view_tokens": 1514,
-  "revision": "1784882000000000002"
+  "revision": "1784882000000000004"
 }

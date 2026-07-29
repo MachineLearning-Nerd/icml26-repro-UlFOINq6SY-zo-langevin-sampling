@@ -1,8 +1,11 @@
-# Verification run (current — v2)
+# Verification runs and scope
 
 **Branch:** master @ `6f524ad` (publication surface; reproduces the verdict) · experiment branch `orx/sgm-prior-real-inverse-problems` · **Run:** `83984eb0-b288-4e4c-b936-b9b532d0526b` (HF cpu-upgrade, 31 min, exit 0) · **Command:** `uv run python repro/src/verify_zo.py`
 
-This supersedes the [Historical rejected baseline](#/historical-toy-baseline). The verifier exits nonzero if any VERIFIED check fails.
+This is the recorded v2 verification run for Claims 1–5 and the **bare-Gaussian** Claim 6 control.
+It does not decide the Figure 2(b) exact-contract target. The separate faithful reconstruction
+completed on HF `cpu-upgrade` in 13m59s; its deterministic checker returns exit `1` to encode the
+correct status: **BLOCKED**, not falsified. See [Claim 6 campaign](#/claim-6-falsification).
 
 ## Figures
 
@@ -12,7 +15,7 @@ This supersedes the [Historical rejected baseline](#/historical-toy-baseline). T
 
 ![Claim 3: ZO-APMC with a REAL trained SGM prior](images/claim3_zo_apmc_fi.png)
 
-![Claim 6: 3/4 (p,b) configs at pb=10 reach FI<0.01](images/claim6_batch_complexity.png)
+![Claim 6: bare-Gaussian control at fixed pb=10](images/claim6_batch_complexity.png)
 
 ![Claims 4/5: ZO-APMC + trained SGM prior on a real image inverse problem (MNIST)](images/claim45_image_recon.png)
 
@@ -35,12 +38,12 @@ CLAIM 3 (Theorem 3): ZO-APMC with a REAL trained SGM prior (not a proxy)
   ZO-APMC + REAL SGM, N= 500: FI=4.5320   N=4000: FI=0.6803
   -> CLAIM 3 VERIFIED
 
-CLAIM 6 (Fig 2b): O(1)-batch invariance at fixed pb=10; FI decreasing with N
+CLAIM 6 CONTROL (bare Gaussian): O(1)-batch invariance at fixed pb=10; FI decreasing with N
   (p=1.0,b=10): FI=0.0073   (p=0.5,b=20): FI=0.0170
   (p=0.3,b=33): FI=0.0079   (p=0.2,b=50): FI=0.0024
   configs with FI<0.01: 3/4 | median FI=0.0076
   control: budget pb 10->40 lowers median FI 0.0076 -> 0.0019 (True)
-  -> CLAIM 6 VERIFIED
+  -> CONTROL PASSES (not a Figure 2(b) verdict)
 
 CLAIMS 4/5: real image inverse problem with trained score-U-Net prior (MNIST 16x16)
   loaded pre-trained image score-U-Net from outputs/mnist_scorenet_16.pt
@@ -48,7 +51,8 @@ CLAIMS 4/5: real image inverse problem with trained score-U-Net prior (MNIST 16x
   mean: PSNR(input)=13.83 -> PSNR(ZO-APMC)=14.00 dB (Δ+0.17)
   -> CLAIMS 4/5 reduced-scale DEMONSTRATED
 
-VERDICT SUMMARY (v2): VERIFIED=5  FAIL=0  (of 5 claim groups)
+VERDICT SUMMARY (v2): recorded control suite passes. Current exact-contract status is shown on each
+claim page; Claim 6 is BLOCKED.
 ```
 
 Source: [`repro/src/verify_zo.py`](https://github.com/MachineLearning-Nerd/icml26-repro-UlFOINq6SY-zo-langevin-sampling/blob/master/repro/src/verify_zo.py) · image SGM: [`repro/src/sgm_image.py`](https://github.com/MachineLearning-Nerd/icml26-repro-UlFOINq6SY-zo-langevin-sampling/blob/master/repro/src/sgm_image.py) · raw JSON [`reports/zo-langevin-repro/verdict.json`](https://github.com/MachineLearning-Nerd/icml26-repro-UlFOINq6SY-zo-langevin-sampling/blob/master/reports/zo-langevin-repro/verdict.json).

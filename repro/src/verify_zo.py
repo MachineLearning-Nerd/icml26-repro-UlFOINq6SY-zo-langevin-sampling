@@ -419,6 +419,13 @@ except Exception as e:
 # SUMMARY
 # =========================================================================== #
 banner("VERDICT SUMMARY (v2)")
+from check_logbook import main as check_logbook
+logbook_pass = check_logbook() == 0
+RESULTS["published_logbook"] = {
+    "verdict": "VERIFIED" if logbook_pass else "FAIL",
+    "passed": logbook_pass,
+    "checker": "repro/src/check_logbook.py",
+}
 verdicts = {k: v.get("verdict") for k, v in RESULTS.items()}
 for k, v in verdicts.items():
     print(f"  [{v}] {k}")
